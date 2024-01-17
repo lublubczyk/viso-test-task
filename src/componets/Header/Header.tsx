@@ -1,4 +1,3 @@
-
 import style from './Header.module.css';
 
 const Header = () => {
@@ -7,6 +6,6 @@ const Header = () => {
             My Google Map
         </div>
     )
-}
+};
 
 export { Header };

@@ -1,53 +1,25 @@
-import { useCallback, useRef } from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { useCallback, useRef, useState } from "react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 
-
+import { defaultOptions, center, containerStyle, key } from '../../constants';
+import { IMarker } from "../../interfaces";
+import { MyMarkers } from "../MyMarkers";
+import { Button } from "../Button";
 import style from './MyGoogleMap.module.css';
-const API_KEY = process.env.REACT_APP_API_KEY;
 
-const containerStyle = {
-    width: '100%',
-    height: '100%'
-};
-
-
-
-const center = {
-    lat: 49.81652427119113,
-    lng: 23.99564785074821
-};
-
-const defaultOptions = {
-    panControl: true,
-    zoomControl: true,
-    mapTypeControl: false,
-    scaleControl: false,
-    streetViewControl: false,
-    rotateControl: false,
-    clickableIcons: false,
-    keyboardShortcuts: false,
-    scrollwheel: false,
-    disableDoubleClickZoom: false,
-    fullscreenControl: false
-};
-
-const firebaseConfig = {
-
-}
-// firebase.initializeApp(firebaseConfig);
-
-// const db = firebase.firestore();
+//const API_KEY = process.env.REACT_APP_API_KEY;
 
 const MyGoogleMap = () => {
     
+    const [markers, setMarkers] = useState<IMarker[]>(center);
+    const mapRef = useRef<google.maps.Map | undefined>(undefined);
+
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: `${API_KEY}`
+        googleMapsApiKey: key
     });
 
-    const mapRef = useRef< google.maps.Map | undefined>(undefined);
-    
-    const onLoad = useCallback(function callback(map: google.maps.Map) {
+    const onLoad = useCallback(function callback(map:google.maps.Map | undefined) {
         mapRef.current = map
     }, []);
     
@@ -55,28 +27,26 @@ const MyGoogleMap = () => {
         mapRef.current = undefined;
     }, []);
     
-    //const onClick = (location) => {
-    //    console.log(location)
-    //}
+    const onClick = (e: google.maps.MapMouseEvent) => {
+        const lat = e.latLng!.lat();
+        const lng = e.latLng!.lng();
+        setMarkers([...markers, { lat, lng }])
+    };
 
     return (
         <div className={style.MyGoogleMap}>
-            
+            <Button setMarkers={setMarkers} />
             {isLoaded &&
                 <GoogleMap
                     mapContainerStyle={containerStyle}
-                    center={center}
+                    center={center[0]}
                     zoom={10}
                     onLoad={onLoad}
                     onUnmount={onUnmount}
                     options={defaultOptions}
-                    onClick={(e: google.maps.MapMouseEvent) => {
-                        const lat = e.latLng!.lat();
-                        const lng = e.latLng!.lng();
-                        console.log()
-                    }}
+                    onClick={onClick}
                 >
-                    <Marker position={center}/>
+                    <MyMarkers markers={ markers } />
                 </GoogleMap>
             }
         </div>
